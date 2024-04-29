@@ -1,0 +1,30 @@
+/* TrekCard.css */
+
+.trek-card {
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .trek-card-image {
+    padding: 5px;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    
+  }
+  
+  .trek-card-content {
+    padding: 20px;
+  }
+  
+  .trek-card-title {
+    margin-top: 0;
+  }
+  
+  .trek-card-description {
+    margin-bottom: 0;
+  }
+  
