@@ -58,14 +58,17 @@
   }
   
   .Auth-form-title {
-    
     text-align: center;
     margin-bottom: 1em;
     font-size: 24px;
     color: rgb(34, 34, 34);
     font-weight: 800;
   }
-  
+  .error-field{
+    color: red;
+    font-size: small;
+    padding-bottom: 10px;
+  }
   label {
     font-size: 14px;
     font-weight: 600;
@@ -105,7 +108,7 @@
   .submit-button:active {
     background-color: #004080;
   }
-  .drop-area {
+  .drop-area-normal {
     border: 2px dashed #ccc;
     padding: 20px;
     text-align: center;
@@ -113,7 +116,6 @@
     border-radius: 8px;
     margin-bottom: 10px;
   }
-
   .drop-area.active {
     border-color: #007bff;
   }
