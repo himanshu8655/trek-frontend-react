@@ -1,10 +1,10 @@
-import "./AddTrek.css";
+import './TrekForm.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCancel, faFileUpload, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 
-export default function AddTrek() {
+export default function TrekForm() {
 const [isFileUploaded,setFileUploaded] = useState(false);
 const [fileName,setFileName] = useState()
 const [trekName,setTrekName] = useState('')
