@@ -1,50 +1,83 @@
 import './TrekForm.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCancel, faFileUpload, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useRef, useState } from "react";
-import axios from 'axios';
+import { faFileUpload, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {useRef, useState } from "react";
+import { collection, addDoc } from 'firebase/firestore'; 
+import { db } from '../../firebase';
+import { getStorage, ref, uploadBytes } from "firebase/storage";
+import UploadFileBtn from "../../components/upload-file-btn/UploadFileBtn";
 
 export default function TrekForm() {
 const [isFileUploaded,setFileUploaded] = useState(false);
-const [fileName,setFileName] = useState()
 const [trekName,setTrekName] = useState('')
 const [trekDesc,setTrekDesc] = useState('')
 const [errorField,setErrorField] = useState('')
 
-
 const currentfile = useRef(null);
+const [file,setFile]= useState('')
 
 const onFileSelected = (e)=>{
   setErrorField('')
   setFileUploaded(true);
-  setFileName(currentfile.current.files[0].name);
+  setFile(e.target.files[0])
 };
-const removeFile = (event)=>{
+const removeFile = ()=>{
   console.log(currentfile.current.name)
   currentfile.current.value = '';
+  setFile('')
   setFileUploaded(false)
 }
-const addTrek = (event)=>{ 
-  event.preventDefault()
+const areFieldsEmpty = ()=>{
   setErrorField('')
-  if(trekName==''){
+  if(trekName===''){
     setErrorField('trekName')
-    return 0;
+    return true;
   }
-  else if(trekDesc==''){
+  else if(trekDesc===''){
     setErrorField('trekDesc')
-    return 0;
+    return true;
   }
   if (!currentfile.current.files.length > 0) {
     setErrorField('uploadFile')
+    return true;
+  }
+  return false;
+}
+
+const toBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = (error) => reject(error);
+});
+
+const uploadFile = (file, path)=>{
+  const storageRef = ref(getStorage(), path);
+  uploadBytes(storageRef, file).then((snapshot) => { 
+  });
+}
+
+const addTrek = async(event)=>{ 
+  event.preventDefault()
+  if(areFieldsEmpty()){
     return 0;
   }
-  axios.post("http://localhost:8080/trek").then(res=>{
-    console.log(res)
-  }).catch(err=>{
+  try {
 
-  })
+    const base64File = await toBase64(file);
+    const docRef = await addDoc(collection(db, "trek"), {
+      name: trekName,
+      desc: trekDesc
+    });
+
+  uploadFile(base64File,docRef.id)
+
+      alert('Successfully added Trek')
+    } catch (e) {
+      alert("Error adding trek!")
   }
+
+}
   return (
     <div className="Auth-form-container">
       <form className="Auth-form" onSubmit={addTrek}>
@@ -66,12 +99,12 @@ const addTrek = (event)=>{
               placeholder="Enter Description..."
               onChange={(e)=>{setTrekDesc(e.target.value);setErrorField('')}}
             />
-                                       {errorField == 'trekDesc'?<div className="error-field">Field cannot be empty!</div>:null}
+            {errorField == 'trekDesc'?<div className="error-field">Field cannot be empty!</div>:null}
 
           </div>
           
           {isFileUploaded?(<div className="flex-container">
-          <span className="display-file">{fileName}</span>
+          <span className="display-file">{file.name}</span>
           <div onClick={removeFile}>
           <FontAwesomeIcon icon={faTimes} size="1x" color="white"/>
           </div>
@@ -83,12 +116,13 @@ const addTrek = (event)=>{
 <input type="file" className="file-upload" onChange={onFileSelected} ref = {currentfile}/>
 
             </div>
-           
           <div className="Auth-form-title">
           {errorField == 'uploadFile'?<div className="error-field">Upload file!</div>:null}
             <button type="submit" className="submit-button">
               Submit
             </button>
+            <UploadFileBtn/>
+
           </div>
         </div>
       </form>

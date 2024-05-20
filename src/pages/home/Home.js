@@ -3,8 +3,12 @@ import TrekCard from '../../components/trek-card/TrekCard'; // Import the TrekCa
 import {  signOut } from "firebase/auth";
 import {auth} from '../../firebase';
 import { useNavigate } from 'react-router-dom';
+import { db } from "../../firebase";
+import { useState } from "react";
 
 export default function Home() {
+  const [info, setInfo] = useState([]);
+
   const navigate = useNavigate();
   const handleLogout = () => {               
     signOut(auth).then(() => {
@@ -15,12 +19,27 @@ export default function Home() {
     // An error happened.
     });
 }
+
+const Fetchdata = () => {
+  db.collection("trek").get().then((querySnapshot) => {
+
+      // Loop through the data and store
+      // it in array to display
+      querySnapshot.forEach(element => {
+          var data = element.data();
+          console.log(data)
+          setInfo(arr => [...arr, data]);
+
+      });
+  })
+}
+
   return (
     <div>
      <Link to="/trek">
      <button click = "">Add Trek</button>
      </Link>
-     <button onClick={handleLogout}>
+     <button onClick={Fetchdata}>
                         Logout
                     </button>
       <TrekCard
