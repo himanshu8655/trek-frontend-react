@@ -1,12 +1,14 @@
 import "./SignUp.css";
 import { Link, Navigate } from "react-router-dom";
 import { auth } from "../../firebase";
-import {  createUserWithEmailAndPassword   } from 'firebase/auth';
+import {  createUserWithEmailAndPassword, updateProfile   } from 'firebase/auth';
 import React, { useState } from "react";
+import UserDTO from "../../dto/UserDTO";
 
 export default function SignUp() {
   const [redirectToLogin, setRedirectToLogin] = React.useState(false);
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const register = (event) => {
     event.preventDefault()
@@ -14,13 +16,12 @@ export default function SignUp() {
     .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        updateProfile(user,{displayName:name}).then((e)=>{
+        })
         setRedirectToLogin(true)
-        console.log(user);
     })
     .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage)
+      alert("Error occurred during Registration!")
     });
   };
 
@@ -32,7 +33,15 @@ export default function SignUp() {
     <div className="Auth-form-container">
       <form className="Auth-form" onSubmit={register}>
         <div className="Auth-form-content">
-          <h3 className="Auth-form-title">Register Here!</h3>
+        <div className="textField-label">
+              <label>Name</label><br/>
+              <input
+                type="text"
+                className="textField-input"
+                placeholder="Enter name"
+                onChange={(e)=>setName(e.target.value)}
+              />
+              </div>
           <div className="textField-label">
               <label>Email address</label><br/>
               <input

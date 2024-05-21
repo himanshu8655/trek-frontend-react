@@ -1,52 +1,66 @@
-import { Link } from "react-router-dom";
 import TrekCard from '../../components/trek-card/TrekCard'; // Import the TrekCard component
-import {  signOut } from "firebase/auth";
-import {auth} from '../../firebase';
-import { useNavigate } from 'react-router-dom';
+import { signOut } from "firebase/auth";
+import { auth } from '../../firebase';
 import { db } from "../../firebase";
-import { useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import TrekDTO from "../../dto/TrekDTO";
+import React, { useEffect, useState } from 'react';
+import { Link, Navigate } from "react-router-dom";
+import './Home.css'; // Import the CSS file for styling
+import { useLoading } from '../../components/app-loader/LoadingContext';
 
 export default function Home() {
-  const [info, setInfo] = useState([]);
+  const [redirectToLogin, setRedirectToLogin] = React.useState(false);
+  const [treks, setTreks] = useState([]);
+  const {setLoading} = useLoading()
 
-  const navigate = useNavigate();
-  const handleLogout = () => {               
+  useEffect(() => {
+    getTreks();
+  }, []);
+
+  const handleLogout = () => {
     signOut(auth).then(() => {
-    // Sign-out successful.
-        navigate("/");
-        console.log("Signed out successfully")
+      setRedirectToLogin(true)
     }).catch((error) => {
-    // An error happened.
+      // An error happened.
     });
-}
-
-const Fetchdata = () => {
-  db.collection("trek").get().then((querySnapshot) => {
-
-      // Loop through the data and store
-      // it in array to display
-      querySnapshot.forEach(element => {
-          var data = element.data();
-          console.log(data)
-          setInfo(arr => [...arr, data]);
-
-      });
-  })
-}
+  }
+  if (redirectToLogin) {
+    return <Navigate to="/login" />;
+  }
+  const getTreks = async () => {
+    setLoading(true)
+    const querySnapshot = await getDocs(collection(db, 'trek'));
+    const trek_data = querySnapshot.docs.map(doc => {return TrekDTO.fromFirestore(doc)});
+    setTreks(trek_data)
+    setLoading(false);
+  }
 
   return (
-    <div>
-     <Link to="/trek">
-     <button click = "">Add Trek</button>
-     </Link>
-     <button onClick={Fetchdata}>
-                        Logout
-                    </button>
-      <TrekCard
-        name="Mount Everest"
-        description="The tallest mountain in the world."
-        image="http://localhost:8080/trek/img/10"
-      />
+    <div className="home-container">
+      <div className="home-header">
+          <Link to="/trek" className="home-btn">Add Trek</Link>
+        <button className="home-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+      <div className="home-grid">
+        {
+          treks.length !== 0 ? (
+            treks.map((trek, index) => (
+              <div key={index} className="trek-card-container">
+                <TrekCard
+                  name={trek.name}
+                  description={trek.desc}
+                  image={trek.download_url}
+                />
+              </div>
+            ))
+          ) : (
+            <div>No Treks!</div>
+          )
+        }
+      </div>
     </div>
   );
 }

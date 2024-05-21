@@ -14,7 +14,22 @@ display: none;
 .drop-area.active {
   border-color: #007bff;
 }
-
+.error-field{
+  color: red;
+  font-size: small;
+  padding-bottom: 10px;
+}
 .drop-text {
   font-size: 16px;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: gainsboro;
+  text-align: left;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
