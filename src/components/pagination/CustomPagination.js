@@ -3,16 +3,19 @@ import ReactPaginate from 'react-paginate';
 import TrekCard from '../../components/trek-card/TrekCard';
 import './CustomPagination.css'; // Custom CSS for pagination styling
 
-function Items({ currentItems }) {
+function Items({ currentItems, onEdit, onDelete }) {
   return (
     <div className="trek-items-container">
       {currentItems &&
-        currentItems.map((item, index) => (
-          <div key={index} className="trek-card-container">
+        currentItems.map((item) => (
+          <div key={item.id} className="trek-card-container">
             <TrekCard
               name={item.name}
               description={item.desc}
               image={item.download_url}
+              id={item.id}
+              onEdit={() => onEdit(item.id)}
+              onDelete={() => onDelete(item.id)}
             />
           </div>
         ))}
@@ -20,11 +23,10 @@ function Items({ currentItems }) {
   );
 }
 
-export default function PaginatedItems({ items }) {
+export default function PaginatedItems({ items, onEdit, onDelete }) {
   const [itemOffset, setItemOffset] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
-  // Function to handle changes in the dropdown
   const handleFilterChange = (event) => {
     const newItemsPerPage = parseInt(event.target.value, 10);
     setItemsPerPage(newItemsPerPage);
@@ -56,7 +58,7 @@ export default function PaginatedItems({ items }) {
           <option value="5">5</option>
         </select>
       </div>
-      <Items currentItems={currentItems} />
+      <Items currentItems={currentItems} onEdit={onEdit} onDelete={onDelete} />
       <div className="pagination-controls">
         <ReactPaginate
           breakLabel="..."

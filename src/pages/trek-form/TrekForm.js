@@ -57,7 +57,8 @@ const addTrek = async(event)=>{
     await setDoc(docRef, { // Use setDoc instead of addDoc
       name: trekName,
       desc: trekDesc,
-      download_url: url // Get and set the download URL directly
+      download_url: url,
+      id: docRef.id
     });
     setLoading(false)
     setRedirectToHome(true)

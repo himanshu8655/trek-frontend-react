@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, Navigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from '../../firebase';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import TrekDTO from "../../dto/TrekDTO";
 import { useLoading } from '../../components/app-loader/LoadingContext';
 import PaginatedItems from '../../components/pagination/CustomPagination';
 import './Home.css'; // Ensure this CSS file contains the necessary styles
+import { deleteObject, getStorage, ref } from 'firebase/storage';
 
 export default function Home() {
   const [redirectToLogin, setRedirectToLogin] = useState(false);
@@ -29,6 +30,21 @@ export default function Home() {
       console.error("Logout Error:", error);
     });
   }
+  const handleEdit = (id) => {
+    console.log(`Edit trek with id: ${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    console.log(`Delete trek with id: ${id}`);
+    try {
+      await deleteDoc(doc(db, 'trek', id));
+      const desertRef = ref(getStorage(), id);
+      await deleteObject(desertRef)
+      setTreks(treks.filter(trek => trek.id !== id));
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+    }
+  };
 
   if (redirectToLogin) {
     return <Navigate to="/login" />;
@@ -55,7 +71,10 @@ export default function Home() {
         <h1 className="home-title">Available Treks</h1>
 
         {treks.length !== 0 ? (
-          <PaginatedItems items={treks} />
+          <PaginatedItems items={treks} 
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          />
         ) : (
           <div className="no-treks-message">No Treks Available!</div>
         )}
