@@ -1,49 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth, db } from '../../firebase';
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { auth, db } from '../../firebase';
 import TrekDTO from "../../dto/TrekDTO";
-import { useLoading } from '../../components/app-loader/LoadingContext';
 import PaginatedItems from '../../components/pagination/CustomPagination';
-import './Home.css'; // Ensure this CSS file contains the necessary styles
-import { deleteObject, getStorage, ref } from 'firebase/storage';
+import { useLoading } from '../../components/app-loader/LoadingContext';
+import './Home.css'; // Import the CSS file for styling
+import ConfirmDialog from '../../components/custom-dialog/CustomDialog';
 
 export default function Home() {
   const [redirectToLogin, setRedirectToLogin] = useState(false);
   const [treks, setTreks] = useState([]);
   const { setLoading } = useLoading();
-  const [filter, setFilter] = useState(3);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedTrekId, setSelectedTrekId] = useState(null);
 
   useEffect(() => {
     getTreks();
   }, []);
 
-  const handleFilterChange = (event) => {
-    setFilter(event.target.value);
-  }
-
   const handleLogout = () => {
     signOut(auth).then(() => {
-      setRedirectToLogin(true);
+      setRedirectToLogin(true)
     }).catch((error) => {
-      console.error("Logout Error:", error);
+      // An error happened.
+      console.error("Error signing out: ", error);
     });
-  }
-  const handleEdit = (id) => {
-    console.log(`Edit trek with id: ${id}`);
-  };
-
-  const handleDelete = async (id) => {
-    console.log(`Delete trek with id: ${id}`);
-    try {
-      await deleteDoc(doc(db, 'trek', id));
-      const desertRef = ref(getStorage(), id);
-      await deleteObject(desertRef)
-      setTreks(treks.filter(trek => trek.id !== id));
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-    }
   };
 
   if (redirectToLogin) {
@@ -54,10 +37,38 @@ export default function Home() {
     setLoading(true);
     const querySnapshot = await getDocs(collection(db, 'trek'));
     const trek_data = querySnapshot.docs.map(doc => TrekDTO.fromFirestore(doc));
-    console.log(trek_data.length)
     setTreks(trek_data);
     setLoading(false);
-  }
+  };
+
+  const handleEdit = (id) => {
+    // Handle edit logic here
+    console.log(`Edit trek with id: ${id}`);
+    // Redirect to an edit page or open an edit modal
+  };
+
+  const handleDelete = async (id) => {
+    // Show confirm dialog before deleting
+    setSelectedTrekId(id);
+    setShowConfirmDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteDoc(doc(db, 'trek', selectedTrekId));
+      setTreks(treks.filter(trek => trek.id !== selectedTrekId));
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+    } finally {
+      setShowConfirmDialog(false);
+      setSelectedTrekId(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDialog(false);
+    setSelectedTrekId(null);
+  };
 
   return (
     <div className="home-container">
@@ -79,6 +90,15 @@ export default function Home() {
           <div className="no-treks-message">No Treks Available!</div>
         )}
       </main>
+      {showConfirmDialog && (
+        <ConfirmDialog
+          title="Confirm Delete"
+          message="Are you sure you want to delete this trek?"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
     </div>
   );
 }
+
