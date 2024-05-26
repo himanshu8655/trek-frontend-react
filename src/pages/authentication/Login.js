@@ -4,21 +4,28 @@ import React, { useState } from "react";
 import { auth } from "../../firebase";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import UserDTO from "../../dto/UserDTO";
+import { useLoading } from "../../components/app-loader/LoadingContext";
 
 export default function Login() {
   const [redirectToHome, setRedirectToHome] = useState(false);
   const [email, setEmail] = useState(''); // Added state for email
   const [password, setPassword] = useState(''); // Added state for password
+  const { setLoading } = useLoading();
+
 
   const login = async (e) => {
     e.preventDefault();
+    setLoading(true)
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const current_user = new UserDTO(user.uid, user.displayName, user.email);
       setRedirectToHome(true);
+      setLoading(false)
+      alert('Signed In Successfully')
     } catch (error) {
-      console.error('Error signing in:', error);
+      alert('Error signing in');
+      setLoading(false)
     }
   }
 

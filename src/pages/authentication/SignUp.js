@@ -3,25 +3,31 @@ import { Link, Navigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import {  createUserWithEmailAndPassword, updateProfile   } from 'firebase/auth';
 import React, { useState } from "react";
-import UserDTO from "../../dto/UserDTO";
+import { useLoading } from '../../components/app-loader/LoadingContext';
 
 export default function SignUp() {
   const [redirectToLogin, setRedirectToLogin] = React.useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const { setLoading } = useLoading();
+
   const register = (event) => {
     event.preventDefault()
+    setLoading(true)
     createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
         updateProfile(user,{displayName:name}).then((e)=>{
         })
+        setLoading(false)
         setRedirectToLogin(true)
+        alert("Registered Successfully")
     })
     .catch((error) => {
       alert("Error occurred during Registration!")
+      setLoading(false)
     });
   };
 
