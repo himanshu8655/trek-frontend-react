@@ -1,19 +1,27 @@
 import React from 'react';
 import './CustomDialog.css'; // Import CSS for styling
+import { useDialog } from './CustomDialogContext';
 
-function ConfirmDialog({ title, message, onConfirm, onCancel }) {
+function CustomDialog({ title, message, onConfirm }) {
+
+  const handleConfirm = () => {
+    onConfirm();
+    hideDialog();
+  }
+
+  const { hideDialog } = useDialog();
   return (
     <div className="confirm-dialog-backdrop">
       <div className="confirm-dialog">
         <h2>{title}</h2>
         <p>{message}</p>
         <div className="confirm-dialog-buttons">
-          <button className="confirm-dialog-button" onClick={onConfirm}>Yes</button>
-          <button className="confirm-dialog-button" onClick={onCancel}>No</button>
+          <button className="confirm-dialog-button" onClick={handleConfirm}>Yes</button>
+          <button className="confirm-dialog-button" onClick={hideDialog}>No</button>
         </div>
       </div>
     </div>
   );
 }
 
-export default ConfirmDialog;
+export default CustomDialog;

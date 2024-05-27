@@ -7,20 +7,40 @@ import TrekDTO from "../../dto/TrekDTO";
 import PaginatedItems from '../../components/pagination/CustomPagination';
 import { useLoading } from '../../components/app-loader/LoadingContext';
 import './Home.css'; // Import the CSS file for styling
-import ConfirmDialog from '../../components/custom-dialog/CustomDialog';
+import { useDialog } from '../../components/custom-dialog/CustomDialogContext';
 
 export default function Home() {
   const [redirectToLogin, setRedirectToLogin] = useState(false);
   const [treks, setTreks] = useState([]);
   const { setLoading } = useLoading();
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const { showDialog } = useDialog();
   const [selectedTrekId, setSelectedTrekId] = useState(null);
 
+
   useEffect(() => {
+    const getTreks = () => {
+      setLoading(true);
+      getDocs(collection(db, 'trek'))
+        .then(querySnapshot => {
+          const trek_data = querySnapshot.docs.map(doc => TrekDTO.fromFirestore(doc));
+          setTreks(trek_data);
+        })
+        .catch(error => {
+          console.error('Error fetching treks: ', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
+
     getTreks();
   }, []);
 
   const handleLogout = () => {
+  showDialog('Confirm?','Are you sure to logout',logout)
+  }
+
+  const logout = () => {
     signOut(auth).then(() => {
       setRedirectToLogin(true)
     }).catch((error) => {
@@ -33,13 +53,6 @@ export default function Home() {
     return <Navigate to="/login" />;
   }
 
-  const getTreks = async () => {
-    setLoading(true);
-    const querySnapshot = await getDocs(collection(db, 'trek'));
-    const trek_data = querySnapshot.docs.map(doc => TrekDTO.fromFirestore(doc));
-    setTreks(trek_data);
-    setLoading(false);
-  };
 
   const handleEdit = (id) => {
     // Handle edit logic here
@@ -50,7 +63,7 @@ export default function Home() {
   const handleDelete = async (id) => {
     // Show confirm dialog before deleting
     setSelectedTrekId(id);
-    setShowConfirmDialog(true);
+    showDialog('Confirm Delete', 'Are you Sure?',confirmDelete);
   };
 
   const confirmDelete = async () => {
@@ -60,14 +73,8 @@ export default function Home() {
     } catch (error) {
       console.error("Error deleting document: ", error);
     } finally {
-      setShowConfirmDialog(false);
       setSelectedTrekId(null);
     }
-  };
-
-  const cancelDelete = () => {
-    setShowConfirmDialog(false);
-    setSelectedTrekId(null);
   };
 
   return (
@@ -90,14 +97,6 @@ export default function Home() {
           <div className="no-treks-message">No Treks Available!</div>
         )}
       </main>
-      {showConfirmDialog && (
-        <ConfirmDialog
-          title="Confirm Delete"
-          message="Are you sure you want to delete this trek?"
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
-      )}
     </div>
   );
 }
