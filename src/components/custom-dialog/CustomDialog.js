@@ -16,8 +16,8 @@ function CustomDialog({ title, message, onConfirm }) {
         <h2>{title}</h2>
         <p>{message}</p>
         <div className="confirm-dialog-buttons">
-          <button className="confirm-dialog-button" onClick={handleConfirm}>Yes</button>
-          <button className="confirm-dialog-button" onClick={hideDialog}>No</button>
+          <button className="primary-btn" onClick={handleConfirm}>Yes</button>
+          <button className="secondary-btn" onClick={hideDialog}>No</button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { auth, db } from '../../firebase';
@@ -15,6 +15,7 @@ export default function Home() {
   const { setLoading } = useLoading();
   const { showDialog } = useDialog();
   const [selectedTrekId, setSelectedTrekId] = useState(null);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function Home() {
   }, []);
 
   const handleLogout = () => {
-  showDialog('Confirm?','Are you sure to logout',logout)
+  showDialog('Confirm Logout','Are you sure to logout?',logout)
   }
 
   const logout = () => {
@@ -52,11 +53,9 @@ export default function Home() {
   if (redirectToLogin) {
     return <Navigate to="/login" />;
   }
-
-
   const handleEdit = (id) => {
-    // Handle edit logic here
-    console.log(`Edit trek with id: ${id}`);
+    navigate(`/trek?id=${id}`)
+        console.log(`Edit trek with id: ${id}`);
     // Redirect to an edit page or open an edit modal
   };
 
@@ -68,14 +67,17 @@ export default function Home() {
 
   const confirmDelete = async () => {
     try {
+      setLoading(true);
       await deleteDoc(doc(db, 'trek', selectedTrekId));
       setTreks(treks.filter(trek => trek.id !== selectedTrekId));
     } catch (error) {
       console.error("Error deleting document: ", error);
     } finally {
       setSelectedTrekId(null);
+      setLoading(false);
     }
   };
+
 
   return (
     <div className="home-container">
